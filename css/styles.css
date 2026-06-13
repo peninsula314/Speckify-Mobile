@@ -288,3 +288,49 @@ body {
     color: var(--text-sub);
     margin-top: 4px;
 }
+
+/* =========================================
+   RESTORED: DESKTOP SYNC BUTTON COLORS
+   ========================================= */
+.sync-status-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    color: #ffffff;
+    background-color: var(--spotify-blue);
+    margin-left: auto;
+}
+
+.sync-status-red {
+    background-color: var(--warning);
+}
+
+.sync-status-yellow {
+    background-color: #eab308;
+}
+
+.sync-status-green {
+    background-color: var(--accent);
+}
+
+/* =========================================
+   RESTORED: EXPLORER LIST SELECTION LOGIC
+   ========================================= */
+.search-result-item .link-action-btn,
+.search-result-item .edit-action-btn {
+    display: none !important;
+}
+
+.search-result-item.selected {
+    background-color: #2a2a2a !important;
+    border-left: 4px solid var(--accent);
+}
+
+.search-result-item.selected .link-action-btn,
+.search-result-item.selected .edit-action-btn {
+    display: inline-block !important;
+}
