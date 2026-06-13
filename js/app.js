@@ -154,7 +154,7 @@ function matchLocal(spotifyId, rawTitle, artistArray) {
 async function fetchCurrentSong() {
     if (!latestData.isLoggedIn) return;
     const token = localStorage.getItem('spotify_access_token');
-    
+
     try {
         const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -175,7 +175,7 @@ async function fetchCurrentSong() {
 
         const match = matchLocal(track.id, currentTrackTitle, track.artists);
         const isExactMatch = match && match.spotify_id === track.id;
-        
+
         latestData = {
             isLoggedIn: true,
             isPlaying: data.is_playing,
@@ -242,7 +242,7 @@ function updateDashboardOffline() {
 async function controlPlayback(action) {
     const token = localStorage.getItem('spotify_access_token');
     const method = (action === 'next' || action === 'previous') ? 'POST' : 'PUT';
-    
+
     await fetch(`https://api.spotify.com/v1/me/player/${action}`, {
         method: method,
         headers: { 'Authorization': `Bearer ${token}` }
@@ -339,9 +339,9 @@ async function confirmMetadataSync() {
         const { error } = await supabaseClient.from('harmonic_vault')
             .update({ spotify_id: latestData.spotifyId, title: latestData.title, artist: latestData.artist })
             .eq('id', latestData.vaultId);
-            
+
         if (error) throw error;
-        
+
         const index = localVaultCache.findIndex(s => s.id === latestData.vaultId);
         if (index !== -1) {
             localVaultCache[index].spotify_id = latestData.spotifyId;
@@ -349,10 +349,10 @@ async function confirmMetadataSync() {
             localVaultCache[index].artist = latestData.artist;
             localStorage.setItem('speckify_vault', JSON.stringify(localVaultCache));
         }
-        
+
         closeSyncModal();
         fetchCurrentSong(); // Recalculate match to trigger Green light
-    } catch(err) {
+    } catch (err) {
         console.error("Sync Failed", err);
     }
 }
@@ -381,7 +381,7 @@ function runLocalSearch() {
 function renderPage() {
     const container = document.getElementById('explorer-results');
     const paginationBox = document.getElementById('pagination-controls');
-    container.innerHTML = ""; 
+    container.innerHTML = "";
 
     if (currentSearchArray.length === 0) {
         container.innerHTML = '<p style="color: #888; text-align: center;">No matches found.</p>';
@@ -437,7 +437,7 @@ async function bootApp() {
     document.getElementById('explorer-view').style.display = 'block';
 
     await loadFullVault();
-    
+
     // Start Spotify Heartbeat Loop (Runs every 10 seconds)
     fetchCurrentSong();
     setInterval(fetchCurrentSong, 10000);
