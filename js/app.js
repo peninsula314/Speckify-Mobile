@@ -3,8 +3,8 @@
 // ==========================================
 const SUPABASE_URL = 'https://rdquiazrxmprmjsxlqom.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkcXVpYXpyeG1wcm1qc3hscW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NDQ2OTMsImV4cCI6MjA5NDIyMDY5M30.kn8qVA7qmwJxap6m2scd4PgyXoaD3eKAZF8XBQ-W2ts';
-const SPOTIFY_CLIENT_ID = '059c5b9b66164856b74f30bff474b505';
-const REDIRECT_URI = 'https://speckify-mobile.pages.dev/';
+const SPOTIFY_CLIENT_ID = '059c5b9b66164856b74f30bff474b505'; 
+const REDIRECT_URI = 'https://speckify-mobile.pages.dev/'; 
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -45,10 +45,10 @@ async function loginToSpotify() {
     localStorage.setItem('spotify_code_verifier', codeVerifier);
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     const scope = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
-
+    
     // RESTORED REAL SPOTIFY URL
     const authUrl = new URL("https://accounts.spotify.com/authorize");
-
+    
     const args = new URLSearchParams({
         response_type: 'code', client_id: SPOTIFY_CLIENT_ID, scope: scope,
         redirect_uri: REDIRECT_URI, code_challenge_method: 'S256', code_challenge: codeChallenge
@@ -72,7 +72,7 @@ async function exchangeToken(code) {
         const data = await response.json();
         localStorage.setItem('spotify_access_token', data.access_token);
         localStorage.setItem('spotify_refresh_token', data.refresh_token);
-        window.history.replaceState({}, document.title, REDIRECT_URI);
+        window.history.replaceState({}, document.title, REDIRECT_URI); 
         latestData.isLoggedIn = true;
         bootApp();
     }
@@ -99,7 +99,7 @@ async function refreshSpotifyToken() {
             return true;
         }
     } catch (e) { console.error("Token refresh failed", e); }
-
+    
     latestData.isLoggedIn = false;
     document.getElementById('login-view').style.display = 'block';
     document.getElementById('dashboard-view').style.display = 'none';
@@ -109,64 +109,63 @@ async function refreshSpotifyToken() {
 // ==========================================
 // 3. DATABASE SYNC & VAULT LOGIC
 // ==========================================
-const escapeHtml = (text) => (text || "").toString().replace(/[&<"'>]/g, (m) => ({
-    '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' }[m]));
+const escapeHtml = (text) => (text || "").toString().replace(/[&<"'>]/g, (m) => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' }[m]));
 
 async function loadFullVault() {
-            const countEl = document.getElementById('song-count');
-            try {
-                countEl.textContent = "Syncing...";
-                let allData = [];
-                let keepFetching = true;
-                let from = 0;
-                const pageSize = 1000;
+    const countEl = document.getElementById('song-count');
+    try {
+        countEl.textContent = "Syncing...";
+        let allData = [];
+        let keepFetching = true;
+        let from = 0;
+        const pageSize = 1000;
 
-                while (keepFetching) {
-                    const { data: pageData, error } = await supabaseClient.from('harmonic_vault').select('*').order('artist', { ascending: true }).range(from, from + pageSize - 1);
-                    if (error) throw error;
-                    if (pageData && pageData.length > 0) allData = allData.concat(pageData);
-                    if (!pageData || pageData.length < pageSize) keepFetching = false;
-                    else from += pageSize;
-                }
-
-                localVaultCache = allData;
-                localStorage.setItem('speckify_vault', JSON.stringify(localVaultCache));
-                countEl.textContent = localVaultCache.length;
-                runLocalSearch();
-            } catch (err) {
-                const offlineData = localStorage.getItem('speckify_vault');
-                if (offlineData) {
-                    localVaultCache = JSON.parse(offlineData);
-                    countEl.textContent = localVaultCache.length;
-                    runLocalSearch();
-                }
-            }
+        while (keepFetching) {
+            const { data: pageData, error } = await supabaseClient.from('harmonic_vault').select('*').order('artist', { ascending: true }).range(from, from + pageSize - 1);
+            if (error) throw error;
+            if (pageData && pageData.length > 0) allData = allData.concat(pageData);
+            if (!pageData || pageData.length < pageSize) keepFetching = false;
+            else from += pageSize;
         }
 
-function matchLocal(spotifyId, rawTitle, artistArray) {
-    if(!localVaultCache || localVaultCache.length === 0) return null;
-if (spotifyId) {
-    let match = localVaultCache.find(row => row.spotify_id === spotifyId);
-    if (match) return match;
+        localVaultCache = allData;
+        localStorage.setItem('speckify_vault', JSON.stringify(localVaultCache));
+        countEl.textContent = localVaultCache.length;
+        runLocalSearch();
+    } catch (err) {
+        const offlineData = localStorage.getItem('speckify_vault');
+        if (offlineData) {
+            localVaultCache = JSON.parse(offlineData);
+            countEl.textContent = localVaultCache.length;
+            runLocalSearch();
+        }
+    }
 }
-if (!rawTitle) return null;
 
-const normalizeText = (str) => (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/&|\+/g, "and").replace(/[.,'?!]/g, "").trim();
-let cleanSpTitle = normalizeText(rawTitle.replace(/\s*\(.*?\)\s*/g, '').replace(/\s-.*$/, '').trim());
+function matchLocal(spotifyId, rawTitle, artistArray) {
+    if (!localVaultCache || localVaultCache.length === 0) return null;
+    if (spotifyId) {
+        let match = localVaultCache.find(row => row.spotify_id === spotifyId);
+        if (match) return match;
+    }
+    if (!rawTitle) return null;
 
-return localVaultCache.find(row => {
-    const dbTitle = normalizeText(row.title);
-    const dbArtist = normalizeText(row.artist);
-    const matchesTitle = dbTitle.includes(cleanSpTitle) || cleanSpTitle.includes(dbTitle);
-    const matchesArtist = artistArray && artistArray.length > 0 ? artistArray.some(a => {
-        let cleanSpArtist = normalizeText(a.name).replace(/^the\s+/, '').trim();
-        let strippedDbArtist = dbArtist.replace(/^the\s+/, '').trim();
-        if (strippedDbArtist.includes(cleanSpArtist) || cleanSpArtist.includes(strippedDbArtist)) return true;
-        const words = cleanSpArtist.split(/\s+/).filter(w => w.length > 2);
-        return words.some(word => strippedDbArtist.includes(word));
-    }) : true;
-    return matchesTitle && matchesArtist;
-});
+    const normalizeText = (str) => (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/&|\+/g, "and").replace(/[.,'?!]/g, "").trim();
+    let cleanSpTitle = normalizeText(rawTitle.replace(/\s*\(.*?\)\s*/g, '').replace(/\s-.*$/, '').trim());
+
+    return localVaultCache.find(row => {
+        const dbTitle = normalizeText(row.title);
+        const dbArtist = normalizeText(row.artist);
+        const matchesTitle = dbTitle.includes(cleanSpTitle) || cleanSpTitle.includes(dbTitle);
+        const matchesArtist = artistArray && artistArray.length > 0 ? artistArray.some(a => {
+            let cleanSpArtist = normalizeText(a.name).replace(/^the\s+/, '').trim();
+            let strippedDbArtist = dbArtist.replace(/^the\s+/, '').trim();
+            if (strippedDbArtist.includes(cleanSpArtist) || cleanSpArtist.includes(strippedDbArtist)) return true;
+            const words = cleanSpArtist.split(/\s+/).filter(w => w.length > 2);
+            return words.some(word => strippedDbArtist.includes(word));
+        }) : true;
+        return matchesTitle && matchesArtist;
+    });
 }
 
 // ==========================================
@@ -175,7 +174,7 @@ return localVaultCache.find(row => {
 async function fetchCurrentSong() {
     if (!latestData.isLoggedIn) return;
     let token = localStorage.getItem('spotify_access_token');
-
+    
     try {
         // RESTORED REAL SPOTIFY URLs
         let [playerRes, queueRes] = await Promise.all([
@@ -191,7 +190,7 @@ async function fetchCurrentSong() {
                     fetch('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetch('https://api.spotify.com/v1/me/player/queue', { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
-            } else return;
+            } else return; 
         }
 
         if (playerRes.status === 204 || playerRes.status > 400) {
@@ -316,7 +315,7 @@ async function fetchCurrentSong() {
                 syncBtn.onclick = () => openStandaloneEditModal(null);
             }
         } else {
-            syncBtn.style.display = "none";
+            syncBtn.style.display = "none"; 
         }
     } catch (err) { console.error("Spotify fetch error", err); }
 }
@@ -365,12 +364,12 @@ async function controlPlayback(action) {
         method = 'PUT';
         url = `https://api.spotify.com/v1/me/player/seek?position_ms=0`;
     }
-
+    
     // Fast visual reset
     if (action === 'next' || action === 'previous' || action === 'restart') {
         localProgressMs = 0; lastSyncTimestamp = Date.now();
         document.getElementById('progress-fill').style.width = '0%';
-        if (action !== 'restart') document.getElementById('song-title').innerText = "Changing track...";
+        if(action !== 'restart') document.getElementById('song-title').innerText = "Changing track...";
     }
 
     await fetch(url, { method: method, headers: { 'Authorization': `Bearer ${token}` } });
@@ -379,8 +378,8 @@ async function controlPlayback(action) {
 
 async function togglePlayPause() {
     const action = latestData.isPlaying ? 'pause' : 'play';
-    latestData.isPlaying = !latestData.isPlaying;
-    lastSyncTimestamp = Date.now();
+    latestData.isPlaying = !latestData.isPlaying; 
+    lastSyncTimestamp = Date.now(); 
 
     const token = localStorage.getItem('spotify_access_token');
     await fetch(`https://api.spotify.com/v1/me/player/${action}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
@@ -446,7 +445,7 @@ async function saveEdits() {
 
         localStorage.setItem('speckify_vault', JSON.stringify(localVaultCache));
         runLocalSearch();
-        fetchCurrentSong();
+        fetchCurrentSong(); 
         document.getElementById('edit-modal').style.display = 'none';
         document.getElementById('status-footer').innerText = isNew ? "✅ New song added!" : "✅ Vault updated!";
     } catch (err) {
@@ -470,9 +469,9 @@ async function confirmMetadataSync() {
         const { error } = await supabaseClient.from('harmonic_vault')
             .update({ spotify_id: latestData.spotifyId, title: latestData.title, artist: latestData.artist })
             .eq('id', latestData.vaultId);
-
+            
         if (error) throw error;
-
+        
         const index = localVaultCache.findIndex(s => s.id === latestData.vaultId);
         if (index !== -1) {
             localVaultCache[index].spotify_id = latestData.spotifyId;
@@ -480,10 +479,10 @@ async function confirmMetadataSync() {
             localVaultCache[index].artist = latestData.artist;
             localStorage.setItem('speckify_vault', JSON.stringify(localVaultCache));
         }
-
+        
         closeSyncModal();
         fetchCurrentSong();
-    } catch (err) { console.error("Sync Failed", err); }
+    } catch(err) { console.error("Sync Failed", err); }
 }
 
 async function executeDirectLink(vaultId, buttonElement) {
@@ -499,9 +498,9 @@ async function executeDirectLink(vaultId, buttonElement) {
         const { error } = await supabaseClient.from('harmonic_vault')
             .update({ spotify_id: latestData.spotifyId, title: latestData.title, artist: latestData.artist })
             .eq('id', vaultId);
-
+            
         if (error) throw error;
-
+        
         const index = localVaultCache.findIndex(s => s.id === vaultId);
         if (index !== -1) {
             localVaultCache[index].spotify_id = latestData.spotifyId;
@@ -550,7 +549,7 @@ function runLocalSearch() {
 function renderPage() {
     const container = document.getElementById('explorer-results');
     const paginationBox = document.getElementById('pagination-controls');
-    container.innerHTML = "";
+    container.innerHTML = ""; 
 
     if (currentSearchArray.length === 0) {
         container.innerHTML = '<p style="color: #888; text-align: center;">No matches found.</p>';
@@ -607,7 +606,7 @@ async function bootApp() {
     document.getElementById('explorer-view').style.display = 'block';
 
     await loadFullVault();
-
+    
     // Start Spotify Heartbeat Loop
     fetchCurrentSong();
     setInterval(fetchCurrentSong, 10000);
