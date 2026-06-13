@@ -118,12 +118,14 @@
         <div id="explorer-view" class="card secondary-card">
             <div class="explorer-header"
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="margin: 0;">Vault Explorer <span id="song-count"
-                        style="font-size: 0.8em; color: var(--accent);"></span>
-                    <button onclick="forceVaultSync()"
-                        style="background: none; border: none; cursor: pointer; font-size: 14px; margin-left: 8px; transition: transform 0.2s;"
-                        title="Pull latest changes from cloud" onmouseover="this.style.transform='rotate(45deg)'"
-                        onmouseout="this.style.transform='rotate(0deg)'">🔄</button>
+                <h3 style="margin: 0;">Vault Explorer <span style="position: relative; display: inline-block;">
+                        <span id="song-count">--</span> <span style="margin-left: 2px;">Songs</span>
+
+                        <button onclick="forceVaultSync()"
+                            style="position: absolute; right: -24px; top: -1px; background: none; border: none; cursor: pointer; font-size: 13px; transition: transform 0.2s;"
+                            title="Pull latest changes from cloud" onmouseover="this.style.transform='rotate(45deg)'"
+                            onmouseout="this.style.transform='rotate(0deg)'">🔄</button>
+                    </span>
                 </h3>
             </div>
 
