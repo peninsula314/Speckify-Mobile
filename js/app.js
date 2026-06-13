@@ -275,7 +275,7 @@ async function fetchCurrentSong() {
             if (warningEl) {
                 if (match && !isExactMatch) {
                     warningEl.innerText = `⚠️ Vault Match: ${match.title}`;
-                    warningEl.style.display = 'block';
+                    warningEl.style.display = '';
                 } else {
                     warningEl.style.display = 'none';
                 }
