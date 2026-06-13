@@ -5,7 +5,7 @@
 const SUPABASE_URL = 'https://rdquiazrxmprmjsxlqom.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkcXVpYXpyeG1wcm1qc3hscW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NDQ2OTMsImV4cCI6MjA5NDIyMDY5M30.kn8qVA7qmwJxap6m2scd4PgyXoaD3eKAZF8XBQ-W2ts';
 const SPOTIFY_CLIENT_ID = '059c5b9b66164856b74f30bff474b505'; // Found in Spotify Dev Dashboard
-const REDIRECT_URI = window.location.origin + window.location.pathname; // Automatically grabs your Live Server URL
+const REDIRECT_URI = 'https://speckify-mobile.pages.dev/'; // Automatically grabs your Live Server URL
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
