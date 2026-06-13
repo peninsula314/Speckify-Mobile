@@ -309,22 +309,27 @@ async function fetchCurrentSong() {
         const editBtn = document.getElementById('edit-vault-btn');
 
         if (!match && !isTransition) {
+            syncBtn.style.display = ""; // 🔥 FIX: UN-HIDE THE BUTTON
             syncBtn.className = "sync-status-btn sync-status-red";
+            syncBtn.style.backgroundColor = ""; // Clear inline colors
             syncBtn.innerText = "ADD NEW";
             syncBtn.onclick = () => openStandaloneEditModal(null);
             keyElement.classList.add('missing');
             editBtn.style.display = "none";
         } else if (!isTransition) {
+            syncBtn.style.display = ""; // 🔥 FIX: UN-HIDE THE BUTTON
             keyElement.classList.remove('missing');
-            editBtn.style.display = "block";
+            editBtn.style.display = ""; // 🔥 FIX: Empty string prevents Flexbox stretch
             editBtn.onclick = () => openStandaloneEditModal(match.id);
 
             if (isExactMatch) {
                 syncBtn.className = "sync-status-btn sync-status-green";
+                syncBtn.style.backgroundColor = ""; // Clear inline colors
                 syncBtn.innerText = "SYNCED";
                 syncBtn.onclick = null;
-            } else if (!match.spotify_id) {
+            } else if (!match.spotify_id || match.spotify_id.trim() === "") { // 🔥 FIX: Added .trim() check from Desktop
                 syncBtn.className = "sync-status-btn sync-status-yellow";
+                syncBtn.style.backgroundColor = ""; // Clear inline colors
                 syncBtn.innerText = "FIX MATCH";
                 syncBtn.title = `Fuzzy matched to: ${match.title}`;
                 syncBtn.onclick = () => openSyncModal(latestData.title, latestData.artist);
@@ -336,7 +341,7 @@ async function fetchCurrentSong() {
                 syncBtn.onclick = () => openStandaloneEditModal(null);
             }
         } else {
-            syncBtn.style.display = "none";
+            syncBtn.style.display = "none"; // Hides during 20s transition
         }
     } catch (err) { console.error("Spotify fetch error", err); }
 }
