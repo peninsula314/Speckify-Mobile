@@ -216,6 +216,7 @@ async function fetchCurrentSong() {
         latestData.isPlaying = data.is_playing;
 
         const match = matchLocal(track.id, currentTrackTitle, track.artists);
+        const isExactMatch = match && match.spotify_id === track.id;
 
         let nextMatch = null;
         let nextTrackStr = "End of Queue";
@@ -249,6 +250,12 @@ async function fetchCurrentSong() {
         const upNextTitleDisplay = upNextPanel ? upNextPanel.querySelector('.next-song-title') : null;
         const upNextKeyDisplay = document.getElementById('next-guitar-key');
 
+        // 🔥 DASHBOARD UPDATE: Shows the wrong vault match directly in the main Title UI!
+        let displayTitle = currentTrackTitle;
+        if (match && !isExactMatch && !isTransition) {
+            displayTitle = `${currentTrackTitle} ⚠️ (Vault: ${match.title})`;
+        }
+
         if (isTransition) {
             upNextPanel.style.display = 'none';
             document.getElementById('song-title').innerText = "UP NEXT: " + nextTrackStr;
@@ -258,7 +265,8 @@ async function fetchCurrentSong() {
             document.getElementById('notes-display').innerText = nextMatch ? nextMatch.notes || "--" : "--";
             document.getElementById('live-badge').innerText = "PRE-LOADING NEXT";
         } else {
-            document.getElementById('song-title').innerText = latestData.title;
+            // Apply our new displayTitle logic here
+            document.getElementById('song-title').innerText = displayTitle;
             document.getElementById('artist-name').innerText = latestData.artist;
             document.getElementById('guitar-key').innerText = match ? match.user_key || "--" : "--";
             document.getElementById('chords-display').innerText = match ? match.chords || "--" : "--";
@@ -303,7 +311,6 @@ async function fetchCurrentSong() {
             editBtn.style.display = "block";
             editBtn.onclick = () => openStandaloneEditModal(match.id);
 
-            const isExactMatch = match && match.spotify_id === track.id;
             if (isExactMatch) {
                 syncBtn.className = "sync-status-btn sync-status-green";
                 syncBtn.innerText = "SYNCED";
@@ -311,11 +318,15 @@ async function fetchCurrentSong() {
             } else if (!match.spotify_id) {
                 syncBtn.className = "sync-status-btn sync-status-yellow";
                 syncBtn.innerText = "FIX MATCH";
+                // 🔥 Added Tooltip
+                syncBtn.title = `Fuzzy matched to: ${match.title}`;
                 syncBtn.onclick = () => openSyncModal(latestData.title, latestData.artist);
             } else {
                 syncBtn.className = "sync-status-btn";
                 syncBtn.style.backgroundColor = "#d97706";
                 syncBtn.innerText = "CLOSE MATCH (ADD NEW)";
+                // 🔥 Added Tooltip
+                syncBtn.title = `Fuzzy matched to: ${match.title}`;
                 syncBtn.onclick = () => openStandaloneEditModal(null);
             }
         } else {
