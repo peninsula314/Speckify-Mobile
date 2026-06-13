@@ -630,3 +630,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('login-view').style.display = 'block';
     }
 });
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').then(() => console.log('Service Worker Registered'));
+}
