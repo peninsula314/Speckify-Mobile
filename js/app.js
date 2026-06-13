@@ -3,8 +3,8 @@
 // ==========================================
 const SUPABASE_URL = 'https://rdquiazrxmprmjsxlqom.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkcXVpYXpyeG1wcm1qc3hscW9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NDQ2OTMsImV4cCI6MjA5NDIyMDY5M30.kn8qVA7qmwJxap6m2scd4PgyXoaD3eKAZF8XBQ-W2ts';
-const SPOTIFY_CLIENT_ID = '059c5b9b66164856b74f30bff474b505'; 
-const REDIRECT_URI = 'https://speckify-mobile.pages.dev/'; 
+const SPOTIFY_CLIENT_ID = '059c5b9b66164856b74f30bff474b505';
+const REDIRECT_URI = 'https://speckify-mobile.pages.dev/';
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -45,10 +45,10 @@ async function loginToSpotify() {
     localStorage.setItem('spotify_code_verifier', codeVerifier);
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     const scope = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
-    
+
     // RESTORED REAL SPOTIFY URL
     const authUrl = new URL("https://accounts.spotify.com/authorize");
-    
+
     const args = new URLSearchParams({
         response_type: 'code', client_id: SPOTIFY_CLIENT_ID, scope: scope,
         redirect_uri: REDIRECT_URI, code_challenge_method: 'S256', code_challenge: codeChallenge
@@ -72,7 +72,7 @@ async function exchangeToken(code) {
         const data = await response.json();
         localStorage.setItem('spotify_access_token', data.access_token);
         localStorage.setItem('spotify_refresh_token', data.refresh_token);
-        window.history.replaceState({}, document.title, REDIRECT_URI); 
+        window.history.replaceState({}, document.title, REDIRECT_URI);
         latestData.isLoggedIn = true;
         bootApp();
     }
@@ -99,7 +99,7 @@ async function refreshSpotifyToken() {
             return true;
         }
     } catch (e) { console.error("Token refresh failed", e); }
-    
+
     latestData.isLoggedIn = false;
     document.getElementById('login-view').style.display = 'block';
     document.getElementById('dashboard-view').style.display = 'none';
@@ -109,7 +109,10 @@ async function refreshSpotifyToken() {
 // ==========================================
 // 3. DATABASE SYNC & VAULT LOGIC
 // ==========================================
-const escapeHtml = (text) => (text || "").toString().replace(/[&<"'>]/g, (m) => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' }[m]));
+// FIXED SYNTAX ERROR HERE
+const escapeHtml = (text) => {
+    return (text || "").toString().replace(/[&<"'>]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+};
 
 async function loadFullVault() {
     const countEl = document.getElementById('song-count');
@@ -174,7 +177,7 @@ function matchLocal(spotifyId, rawTitle, artistArray) {
 async function fetchCurrentSong() {
     if (!latestData.isLoggedIn) return;
     let token = localStorage.getItem('spotify_access_token');
-    
+
     try {
         // RESTORED REAL SPOTIFY URLs
         let [playerRes, queueRes] = await Promise.all([
@@ -190,7 +193,7 @@ async function fetchCurrentSong() {
                     fetch('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetch('https://api.spotify.com/v1/me/player/queue', { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
-            } else return; 
+            } else return;
         }
 
         if (playerRes.status === 204 || playerRes.status > 400) {
@@ -284,6 +287,7 @@ async function fetchCurrentSong() {
             playIcon.innerHTML = '<path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>';
         }
 
+        // Traffic Light Buttons
         const syncBtn = document.getElementById('sync-status-btn');
         const keyElement = document.getElementById('guitar-key');
         const editBtn = document.getElementById('edit-vault-btn');
@@ -315,7 +319,7 @@ async function fetchCurrentSong() {
                 syncBtn.onclick = () => openStandaloneEditModal(null);
             }
         } else {
-            syncBtn.style.display = "none"; 
+            syncBtn.style.display = "none";
         }
     } catch (err) { console.error("Spotify fetch error", err); }
 }
@@ -351,7 +355,7 @@ setInterval(() => {
 }, 1000);
 
 // ==========================================
-// 6. PLAYBACK CONTROLS (ADDED RESTART)
+// 6. PLAYBACK CONTROLS (RESTORED API URLs)
 // ==========================================
 async function controlPlayback(action) {
     const token = localStorage.getItem('spotify_access_token');
@@ -364,12 +368,12 @@ async function controlPlayback(action) {
         method = 'PUT';
         url = `https://api.spotify.com/v1/me/player/seek?position_ms=0`;
     }
-    
+
     // Fast visual reset
     if (action === 'next' || action === 'previous' || action === 'restart') {
         localProgressMs = 0; lastSyncTimestamp = Date.now();
         document.getElementById('progress-fill').style.width = '0%';
-        if(action !== 'restart') document.getElementById('song-title').innerText = "Changing track...";
+        if (action !== 'restart') document.getElementById('song-title').innerText = "Changing track...";
     }
 
     await fetch(url, { method: method, headers: { 'Authorization': `Bearer ${token}` } });
@@ -378,8 +382,8 @@ async function controlPlayback(action) {
 
 async function togglePlayPause() {
     const action = latestData.isPlaying ? 'pause' : 'play';
-    latestData.isPlaying = !latestData.isPlaying; 
-    lastSyncTimestamp = Date.now(); 
+    latestData.isPlaying = !latestData.isPlaying;
+    lastSyncTimestamp = Date.now();
 
     const token = localStorage.getItem('spotify_access_token');
     await fetch(`https://api.spotify.com/v1/me/player/${action}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
@@ -445,7 +449,7 @@ async function saveEdits() {
 
         localStorage.setItem('speckify_vault', JSON.stringify(localVaultCache));
         runLocalSearch();
-        fetchCurrentSong(); 
+        fetchCurrentSong();
         document.getElementById('edit-modal').style.display = 'none';
         document.getElementById('status-footer').innerText = isNew ? "✅ New song added!" : "✅ Vault updated!";
     } catch (err) {
@@ -469,9 +473,9 @@ async function confirmMetadataSync() {
         const { error } = await supabaseClient.from('harmonic_vault')
             .update({ spotify_id: latestData.spotifyId, title: latestData.title, artist: latestData.artist })
             .eq('id', latestData.vaultId);
-            
+
         if (error) throw error;
-        
+
         const index = localVaultCache.findIndex(s => s.id === latestData.vaultId);
         if (index !== -1) {
             localVaultCache[index].spotify_id = latestData.spotifyId;
@@ -479,10 +483,10 @@ async function confirmMetadataSync() {
             localVaultCache[index].artist = latestData.artist;
             localStorage.setItem('speckify_vault', JSON.stringify(localVaultCache));
         }
-        
+
         closeSyncModal();
         fetchCurrentSong();
-    } catch(err) { console.error("Sync Failed", err); }
+    } catch (err) { console.error("Sync Failed", err); }
 }
 
 async function executeDirectLink(vaultId, buttonElement) {
@@ -498,9 +502,9 @@ async function executeDirectLink(vaultId, buttonElement) {
         const { error } = await supabaseClient.from('harmonic_vault')
             .update({ spotify_id: latestData.spotifyId, title: latestData.title, artist: latestData.artist })
             .eq('id', vaultId);
-            
+
         if (error) throw error;
-        
+
         const index = localVaultCache.findIndex(s => s.id === vaultId);
         if (index !== -1) {
             localVaultCache[index].spotify_id = latestData.spotifyId;
@@ -549,7 +553,7 @@ function runLocalSearch() {
 function renderPage() {
     const container = document.getElementById('explorer-results');
     const paginationBox = document.getElementById('pagination-controls');
-    container.innerHTML = ""; 
+    container.innerHTML = "";
 
     if (currentSearchArray.length === 0) {
         container.innerHTML = '<p style="color: #888; text-align: center;">No matches found.</p>';
@@ -562,7 +566,6 @@ function renderPage() {
     pageItems.forEach(song => {
         const div = document.createElement('div');
         div.className = "search-result-item";
-        // REMOVED INLINE STYLES FOR SELECTION; Let CSS handle hover/selected!
         div.onclick = function () {
             document.querySelectorAll('.search-result-item').forEach(el => el.classList.remove('selected'));
             this.classList.add('selected');
@@ -606,7 +609,7 @@ async function bootApp() {
     document.getElementById('explorer-view').style.display = 'block';
 
     await loadFullVault();
-    
+
     // Start Spotify Heartbeat Loop
     fetchCurrentSong();
     setInterval(fetchCurrentSong, 10000);
