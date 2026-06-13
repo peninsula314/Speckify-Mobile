@@ -594,14 +594,16 @@ function renderPage() {
         };
 
         div.innerHTML = `
-            <div style="flex: 1;">
-                <strong style="font-size: 15px;">${escapeHtml(song.title) || "Unknown"}</strong> <br>
-                <span style="font-size: 13px; color: #888;">${escapeHtml(song.artist) || "Unknown"}</span><br>
-                <span style="font-size: 12px; color: var(--accent); font-weight: bold;">Key: ${escapeHtml(song.user_key) || "--"}</span>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <button onclick="event.stopPropagation(); executeDirectLink('${song.id}', this)" class="link-action-btn" style="background: #1DB954; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold;">Link</button>
-                <button onclick="event.stopPropagation(); openStandaloneEditModal('${song.id}')" class="edit-action-btn" style="background: #333; color: white; border: none; padding: 10px 15px; border-radius: 6px;">Edit</button>
+            <div class="explorer-row">
+                <div class="explorer-text-group">
+                    <span class="explorer-title">${escapeHtml(song.title) || "Unknown"}</span>
+                    <span class="explorer-meta">${escapeHtml(song.artist) || "Unknown"}</span>
+                    <span class="explorer-key">Key: ${escapeHtml(song.user_key) || "--"}</span>
+                </div>
+                <div class="explorer-actions">
+                    <button onclick="event.stopPropagation(); executeDirectLink('${song.id}', this)" class="link-action-btn" style="background: #1DB954; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold;">Link</button>
+                    <button onclick="event.stopPropagation(); openStandaloneEditModal('${song.id}')" class="edit-action-btn" style="background: #333; color: white; border: none; padding: 8px 12px; border-radius: 6px;">Edit</button>
+                </div>
             </div>
         `;
         container.appendChild(div);
