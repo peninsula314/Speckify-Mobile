@@ -179,7 +179,6 @@ async function fetchCurrentSong() {
     let token = localStorage.getItem('spotify_access_token');
 
     try {
-        // RESTORED REAL SPOTIFY URLs
         let [playerRes, queueRes] = await Promise.all([
             fetch('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${token}` } }),
             fetch('https://api.spotify.com/v1/me/player/queue', { headers: { 'Authorization': `Bearer ${token}` } })
@@ -250,11 +249,8 @@ async function fetchCurrentSong() {
         const upNextTitleDisplay = upNextPanel ? upNextPanel.querySelector('.next-song-title') : null;
         const upNextKeyDisplay = document.getElementById('next-guitar-key');
 
-        // 🔥 DASHBOARD UPDATE: Shows the wrong vault match directly in the main Title UI!
-        let displayTitle = currentTrackTitle;
-        if (match && !isExactMatch && !isTransition) {
-            displayTitle = `${currentTrackTitle} ⚠️ (Vault: ${match.title})`;
-        }
+        // Grab our new warning element
+        const warningEl = document.getElementById('vault-warning');
 
         if (isTransition) {
             upNextPanel.style.display = 'none';
@@ -264,14 +260,26 @@ async function fetchCurrentSong() {
             document.getElementById('chords-display').innerText = nextMatch ? nextMatch.chords || "--" : "--";
             document.getElementById('notes-display').innerText = nextMatch ? nextMatch.notes || "--" : "--";
             document.getElementById('live-badge').innerText = "PRE-LOADING NEXT";
+
+            // Hide the warning during transitions
+            if (warningEl) warningEl.style.display = 'none';
         } else {
-            // Apply our new displayTitle logic here
-            document.getElementById('song-title').innerText = displayTitle;
+            document.getElementById('song-title').innerText = currentTrackTitle;
             document.getElementById('artist-name').innerText = latestData.artist;
             document.getElementById('guitar-key').innerText = match ? match.user_key || "--" : "--";
             document.getElementById('chords-display').innerText = match ? match.chords || "--" : "--";
             document.getElementById('notes-display').innerText = match ? match.notes || "--" : "--";
             document.getElementById('live-badge').innerText = "LIVE SYNC";
+
+            // 🔥 NEW DASHBOARD UPDATE: Show warning directly inside the Giant Key Box
+            if (warningEl) {
+                if (match && !isExactMatch) {
+                    warningEl.innerText = `⚠️ Vault Match: ${match.title}`;
+                    warningEl.style.display = 'block';
+                } else {
+                    warningEl.style.display = 'none';
+                }
+            }
 
             if (upNextPanel) {
                 upNextPanel.style.display = 'block';
@@ -318,14 +326,12 @@ async function fetchCurrentSong() {
             } else if (!match.spotify_id) {
                 syncBtn.className = "sync-status-btn sync-status-yellow";
                 syncBtn.innerText = "FIX MATCH";
-                // 🔥 Added Tooltip
                 syncBtn.title = `Fuzzy matched to: ${match.title}`;
                 syncBtn.onclick = () => openSyncModal(latestData.title, latestData.artist);
             } else {
                 syncBtn.className = "sync-status-btn";
                 syncBtn.style.backgroundColor = "#d97706";
                 syncBtn.innerText = "CLOSE MATCH (ADD NEW)";
-                // 🔥 Added Tooltip
                 syncBtn.title = `Fuzzy matched to: ${match.title}`;
                 syncBtn.onclick = () => openStandaloneEditModal(null);
             }
