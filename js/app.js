@@ -651,3 +651,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').then(() => console.log('Service Worker Registered'));
 }
+
+async function forceVaultSync() {
+    const footer = document.getElementById('status-footer');
+    const originalText = footer.innerText;
+    footer.innerText = "⏳ Downloading latest vault from cloud...";
+
+    try {
+        // Mobile talks directly to Supabase, so we just run the load function
+        await loadFullVault();
+
+        // Re-evaluate the current song to instantly remove any "Fix Match" warnings
+        await fetchCurrentSong();
+
+        footer.innerText = "✅ Vault synced with cloud!";
+        setTimeout(() => footer.innerText = originalText, 3000);
+    } catch (err) {
+        console.error("Force sync failed", err);
+        footer.innerText = "❌ Sync failed.";
+        setTimeout(() => footer.innerText = originalText, 3000);
+    }
+}
