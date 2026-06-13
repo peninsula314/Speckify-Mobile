@@ -334,3 +334,35 @@ body {
 .search-result-item.selected .edit-action-btn {
     display: inline-block !important;
 }
+
+/* Edit Modal Form Formatting */
+.modal-label {
+    display: block;
+    margin-bottom: 5px;
+    margin-top: 10px;
+    /* Space above each label */
+    font-size: 11px;
+    color: var(--text-sub);
+    /* Consistent gray */
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 10px;
+    background: #222;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 5px;
+    font-size: 15px;
+    box-sizing: border-box;
+    /* Ensures padding doesn't break width */
+}
+
+/* Ensure the modal content doesn't get cramped */
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
