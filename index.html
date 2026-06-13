@@ -134,9 +134,16 @@
             </div>
 
             <div class="search-controls" style="display: flex; gap: 10px; margin-bottom: 15px; flex-direction: column;">
-                <input type="text" id="vault-search" placeholder="Search by title, artist, key, or chords..."
-                    oninput="runLocalSearch()"
-                    style="width: 100%; padding: 12px; border-radius: 5px; background: #222; color: #fff; border: 1px solid #444; font-size: 16px;">
+                <div style="position: relative; width: 100%;">
+                    <input type="text" id="vault-search" placeholder="Search by title, artist, key, or chords..."
+                        oninput="runLocalSearch()"
+                        style="width: 100%; padding: 12px; padding-right: 40px; border-radius: 5px; background: #222; color: #fff; border: 1px solid #444; font-size: 16px; box-sizing: border-box;">
+
+                    <button onclick="clearSearch()"
+                        style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: #333; border: none; color: white; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px; font-weight: bold; line-height: 1;">
+                        ×
+                    </button>
+                </div>
 
                 <select id="vault-sort" onchange="runLocalSearch()"
                     style="padding: 12px; border-radius: 5px; background: #222; color: #fff; border: 1px solid #444; font-size: 16px;">

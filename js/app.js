@@ -677,3 +677,10 @@ async function forceVaultSync() {
         setTimeout(() => footer.innerText = originalText, 3000);
     }
 }
+
+function clearSearch() {
+    const searchInput = document.getElementById('vault-search');
+    searchInput.value = ''; // Clear the text
+    runLocalSearch();       // Trigger the search logic (which will show the blank list)
+    searchInput.focus();    // Put focus back in the box so you can start typing again
+}
