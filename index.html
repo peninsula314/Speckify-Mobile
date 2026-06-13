@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Speckify Mobile</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <div id="login-view" class="card primary-card login-view-container" style="display: none;">
+            <div class="logo login-logo">SPECKIFY MOBILE</div>
+            <p class="login-subtitle">Connect to control playback.</p>
+            <button id="spotify-login-btn" class="modal-btn confirm login-link">Connect to Spotify</button>
+        </div>
+
+        <div id="dashboard-view" class="card primary-card">
+            <div class="header">
+                <div class="logo">SPECKIFY</div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="sync-status-btn" class="sync-status-btn">STATUS</button>
+                    <div id="live-badge" class="sync-badge">LIVE SYNC</div>
+                </div>
+            </div>
+
+            <div class="album-wrapper">
+                <img id="track-art" class="album-art"
+                    src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231e222d'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%238e99b0' font-size='10'>No Artwork</text></svg>"
+                    alt="Album Art">
+                <div class="song-info">
+                    <h2 id="song-title" class="song-title">Play a track to start</h2>
+                    <p id="artist-name" class="song-artist">Waiting for Spotify...</p>
+                </div>
+            </div>
+
+            <div class="giant-key-box">
+                <button id="edit-vault-btn" class="edit-data-btn" onclick="openStandaloneEditModal(currentVaultId)"
+                    title="Edit Vault Data">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+                    </svg>
+                </button>
+                <div class="key-title-row">
+                    <span class="key-title">Guitar Key</span>
+                    <span id="spotify-est-key" class="spotify-est-badge">Spotify Est: --</span>
+                </div>
+                <h1 id="guitar-key" class="key-text">--</h1>
+            </div>
+
+            <div class="details-grid">
+                <div class="details-item">
+                    <div class="details-label">Chords</div>
+                    <p id="chords-display" class="details-val">--</p>
+                </div>
+                <div class="details-item">
+                    <div class="details-label">Tuning / Notes</div>
+                    <p id="notes-display" class="details-val">--</p>
+                </div>
+            </div>
+
+            <div class="controls-wrapper">
+                <button class="ctrl-btn" onclick="controlPlayback('previous')">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M4 4a.5.5 0 0 1 1 0v8a.5.5 0 0 1-1 0V4zm3.204 4.133L11.704 5.63a.5.5 0 0 1 .796.416v7a.5.5 0 0 1-.796.416L7.204 10.966a.5.5 0 0 1 0-.832z" />
+                    </svg>
+                </button>
+                <button id="play-pause-btn" class="ctrl-btn play-pause" onclick="togglePlayPause()">
+                    <svg id="play-icon" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z" />
+                    </svg>
+                </button>
+                <button class="ctrl-btn" onclick="controlPlayback('next')">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M12.5 4a.5.5 0 0 0-1 0v8a.5.5 0 0 0 1 0V4zM3.696 4.133A.5.5 0 0 0 3 4.5v7a.5.5 0 0 0 .796.416l3.5-2.5a.5.5 0 0 0 0-.832l-3.5-2.5z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="explorer-view" class="card secondary-card">
+            <div class="explorer-header"
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">Vault Explorer <span id="song-count"
+                        style="font-size: 0.8em; color: var(--accent);"></span></h3>
+            </div>
+
+            <div class="search-controls" style="display: flex; gap: 10px; margin-bottom: 15px; flex-direction: column;">
+                <input type="text" id="vault-search" placeholder="Search by title, artist, key, or chords..."
+                    oninput="runLocalSearch()"
+                    style="width: 100%; padding: 12px; border-radius: 5px; background: #222; color: #fff; border: 1px solid #444; font-size: 16px;">
+
+                <select id="vault-sort" onchange="runLocalSearch()"
+                    style="padding: 12px; border-radius: 5px; background: #222; color: #fff; border: 1px solid #444; font-size: 16px;">
+                    <option value="artist">Sort by Artist</option>
+                    <option value="title">Sort by Title</option>
+                    <option value="user_key">Sort by Key</option>
+                </select>
+            </div>
+
+            <div id="explorer-results">
+                <p style="color: #888; text-align: center;">Type to search the vault...</p>
+            </div>
+
+            <div id="pagination-controls"
+                style="display: none; justify-content: space-between; align-items: center; margin-top: 10px; padding: 10px; background: #1a1b20; border-radius: 5px;">
+                <button id="prev-page-btn" onclick="changePage(-1)"
+                    style="padding: 8px 15px; background: #333; color: white; border: none; border-radius: 3px; font-weight: bold;">Prev</button>
+                <span id="page-indicator" style="color: #bbb; font-size: 14px;">Page 1</span>
+                <button id="next-page-btn" onclick="changePage(1)"
+                    style="padding: 8px 15px; background: #333; color: white; border: none; border-radius: 3px; font-weight: bold;">Next</button>
+            </div>
+        </div>
+        <div id="edit-modal" class="modal-overlay" style="display: none;">
+            <div class="modal-content" style="max-width: 400px;">
+                <h3 id="modal-title" class="modal-title modal-title-spaced">Vault Entry</h3>
+
+                <label class="modal-label">Title</label>
+                <input type="text" id="edit-title" class="modal-input">
+
+                <label class="modal-label">Artist</label>
+                <input type="text" id="edit-artist" class="modal-input">
+
+                <label class="modal-label">User Key</label>
+                <input type="text" id="edit-key" class="modal-input">
+
+                <label class="modal-label">Spotify Est. Key</label>
+                <input type="text" id="edit-spotify-camelot" class="modal-input">
+
+                <label class="modal-label">Chords</label>
+                <input type="text" id="edit-chords" class="modal-input">
+
+                <label class="modal-label">Notes</label>
+                <textarea id="edit-notes" rows="3" class="modal-input" style="resize: none;"></textarea>
+
+                <div class="modal-buttons">
+                    <button onclick="document.getElementById('edit-modal').style.display='none'"
+                        class="modal-btn cancel">Cancel</button>
+                    <button id="save-edit-btn" onclick="saveEdits()" class="modal-btn confirm">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="sync-modal" class="modal-overlay" style="display: none;">
+            <div class="modal-content">
+                <h3 class="modal-title">Sync Current Spotify Track</h3>
+                <p class="modal-desc">
+                    Linking current track to <strong id="modal-match-details" class="text-accent">--</strong>.
+                </p>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" onclick="closeSyncModal()">Cancel</button>
+                    <button class="modal-btn confirm" onclick="confirmMetadataSync()">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-status" id="status-footer">LIVE CONNECTION: Mobile Engine initialized.</div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>
