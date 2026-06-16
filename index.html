@@ -131,6 +131,10 @@
                             onmouseout="this.style.transform='rotate(0deg)'">🔄</button>
                     </span>
                 </h3>
+                <button onclick="openStandaloneEditModal(null, true)"
+                    style="background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                    + Add New
+                </button>
             </div>
 
             <div class="search-controls" style="display: flex; gap: 10px; margin-bottom: 15px; flex-direction: column;">
@@ -211,8 +215,3 @@
 
         <div class="footer-status" id="status-footer">LIVE CONNECTION: Mobile Engine initialized.</div>
     </div>
-
-    <script src="js/app.js"></script>
-</body>
-
-</html>

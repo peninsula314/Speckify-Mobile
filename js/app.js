@@ -109,9 +109,8 @@ async function refreshSpotifyToken() {
 // ==========================================
 // 3. DATABASE SYNC & VAULT LOGIC
 // ==========================================
-// FIXED SYNTAX ERROR HERE
 const escapeHtml = (text) => {
-    return (text || "").toString().replace(/[&<"'>]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+    return (text || "").toString().replace(/[&<"'>]/g, (m) => ({ '&': '&', '<': '<', '>': '>', '"': '&quot;', "'": '&#39;' }[m]));
 };
 
 async function loadFullVault() {
@@ -180,7 +179,7 @@ async function fetchCurrentSong() {
 
     try {
         let [playerRes, queueRes] = await Promise.all([
-            fetch('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } }),
             fetch('https://api.spotify.com/v1/me/player/queue', { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
 
@@ -189,7 +188,7 @@ async function fetchCurrentSong() {
             if (refreshed) {
                 token = localStorage.getItem('spotify_access_token');
                 [playerRes, queueRes] = await Promise.all([
-                    fetch('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetch('https://api.spotify.com/v1/me/player/queue', { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
             } else return;
@@ -249,7 +248,6 @@ async function fetchCurrentSong() {
         const upNextTitleDisplay = upNextPanel ? upNextPanel.querySelector('.next-song-title') : null;
         const upNextKeyDisplay = document.getElementById('next-guitar-key');
 
-        // Grab our new warning element
         const warningEl = document.getElementById('vault-warning');
 
         if (isTransition) {
@@ -261,7 +259,6 @@ async function fetchCurrentSong() {
             document.getElementById('notes-display').innerText = nextMatch ? nextMatch.notes || "--" : "--";
             document.getElementById('live-badge').innerText = "PRE-LOADING NEXT";
 
-            // Hide the warning during transitions
             if (warningEl) warningEl.style.display = 'none';
         } else {
             document.getElementById('song-title').innerText = currentTrackTitle;
@@ -271,7 +268,6 @@ async function fetchCurrentSong() {
             document.getElementById('notes-display').innerText = match ? match.notes || "--" : "--";
             document.getElementById('live-badge').innerText = "LIVE SYNC";
 
-            // 🔥 NEW DASHBOARD UPDATE: Show warning directly inside the Giant Key Box
             if (warningEl) {
                 if (match && !isExactMatch) {
                     warningEl.innerText = `⚠️ Vault Match: ${match.title}`;
@@ -303,33 +299,32 @@ async function fetchCurrentSong() {
             playIcon.innerHTML = '<path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>';
         }
 
-        // Traffic Light Buttons
         const syncBtn = document.getElementById('sync-status-btn');
         const keyElement = document.getElementById('guitar-key');
         const editBtn = document.getElementById('edit-vault-btn');
 
         if (!match && !isTransition) {
-            syncBtn.style.display = ""; // 🔥 FIX: UN-HIDE THE BUTTON
+            syncBtn.style.display = "";
             syncBtn.className = "sync-status-btn sync-status-red";
-            syncBtn.style.backgroundColor = ""; // Clear inline colors
+            syncBtn.style.backgroundColor = "";
             syncBtn.innerText = "ADD NEW";
             syncBtn.onclick = () => openStandaloneEditModal(null);
             keyElement.classList.add('missing');
             editBtn.style.display = "none";
         } else if (!isTransition) {
-            syncBtn.style.display = ""; // 🔥 FIX: UN-HIDE THE BUTTON
+            syncBtn.style.display = "";
             keyElement.classList.remove('missing');
-            editBtn.style.display = ""; // 🔥 FIX: Empty string prevents Flexbox stretch
+            editBtn.style.display = "";
             editBtn.onclick = () => openStandaloneEditModal(match.id);
 
             if (isExactMatch) {
                 syncBtn.className = "sync-status-btn sync-status-green";
-                syncBtn.style.backgroundColor = ""; // Clear inline colors
+                syncBtn.style.backgroundColor = "";
                 syncBtn.innerText = "SYNCED";
                 syncBtn.onclick = null;
-            } else if (!match.spotify_id || match.spotify_id.trim() === "") { // 🔥 FIX: Added .trim() check from Desktop
+            } else if (!match.spotify_id || match.spotify_id.trim() === "") {
                 syncBtn.className = "sync-status-btn sync-status-yellow";
-                syncBtn.style.backgroundColor = ""; // Clear inline colors
+                syncBtn.style.backgroundColor = "";
                 syncBtn.innerText = "FIX MATCH";
                 syncBtn.title = `Fuzzy matched to: ${match.title}`;
                 syncBtn.onclick = () => openSyncModal(latestData.title, latestData.artist);
@@ -341,7 +336,7 @@ async function fetchCurrentSong() {
                 syncBtn.onclick = () => openStandaloneEditModal(null);
             }
         } else {
-            syncBtn.style.display = "none"; // Hides during 20s transition
+            syncBtn.style.display = "none";
         }
     } catch (err) { console.error("Spotify fetch error", err); }
 }
@@ -377,7 +372,7 @@ setInterval(() => {
 }, 1000);
 
 // ==========================================
-// 6. PLAYBACK CONTROLS (RESTORED API URLs)
+// 6. PLAYBACK CONTROLS
 // ==========================================
 async function controlPlayback(action) {
     const token = localStorage.getItem('spotify_access_token');
@@ -391,7 +386,6 @@ async function controlPlayback(action) {
         url = `https://api.spotify.com/v1/me/player/seek?position_ms=0`;
     }
 
-    // Fast visual reset
     if (action === 'next' || action === 'previous' || action === 'restart') {
         localProgressMs = 0; lastSyncTimestamp = Date.now();
         document.getElementById('progress-fill').style.width = '0%';
@@ -415,7 +409,7 @@ async function togglePlayPause() {
 // ==========================================
 // 7. DATABASE MODALS & WRITING
 // ==========================================
-function openStandaloneEditModal(vaultId) {
+function openStandaloneEditModal(vaultId, isManualNew = false) {
     editingStandaloneId = vaultId;
     document.getElementById('modal-title').innerText = vaultId ? "Edit Vault Entry" : "Add New Song";
     document.getElementById('edit-modal').style.display = 'flex';
@@ -430,6 +424,14 @@ function openStandaloneEditModal(vaultId) {
             document.getElementById('edit-chords').value = song.chords || "";
             document.getElementById('edit-notes').value = song.notes || "";
         }
+    } else if (isManualNew) {
+        // Completely empty for a fresh standalone addition from Explorer
+        document.getElementById('edit-title').value = "";
+        document.getElementById('edit-artist').value = "";
+        document.getElementById('edit-key').value = "";
+        document.getElementById('edit-spotify-camelot').value = "";
+        document.getElementById('edit-chords').value = "";
+        document.getElementById('edit-notes').value = "";
     } else {
         document.getElementById('edit-title').value = currentTrackTitle || "";
         document.getElementById('edit-artist').value = currentTrackArtist || "";
@@ -455,13 +457,22 @@ async function saveEdits() {
         notes: document.getElementById('edit-notes').value
     };
 
-    if (isNew) songData.spotify_id = currentSpotifyTrackId;
+    if (isNew) {
+        // If it's a new song, only automatically map the Spotify ID if the 
+        // form details actually match the song that happens to be playing
+        // (This stops manual Explorer entries from grabbing the current active ID)
+        if (songData.title === currentTrackTitle && songData.artist === currentTrackArtist && currentSpotifyTrackId) {
+            songData.spotify_id = currentSpotifyTrackId;
+        } else {
+            songData.spotify_id = null;
+        }
+    }
 
     try {
         if (isNew) {
             const { data, error } = await supabaseClient.from('harmonic_vault').insert([songData]).select();
             if (error) throw error;
-            if (data) localVaultCache.push(data[0]);
+            if (data && data.length > 0) localVaultCache.push(data[0]);
         } else {
             const { error } = await supabaseClient.from('harmonic_vault').update(songData).eq('id', editingStandaloneId);
             if (error) throw error;
@@ -594,16 +605,16 @@ function renderPage() {
         };
 
         div.innerHTML = `
-            <div style="flex: 1;">
-                <strong style="font-size: 15px;">${escapeHtml(song.title) || "Unknown"}</strong> <br>
-                <span style="font-size: 13px; color: #888;">${escapeHtml(song.artist) || "Unknown"}</span><br>
-                <span style="font-size: 12px; color: var(--accent); font-weight: bold;">Key: ${escapeHtml(song.user_key) || "--"}</span>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <button onclick="event.stopPropagation(); executeDirectLink('${song.id}', this)" class="link-action-btn" style="background: #1DB954; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold;">Link</button>
-                <button onclick="event.stopPropagation(); openStandaloneEditModal('${song.id}')" class="edit-action-btn" style="background: #333; color: white; border: none; padding: 10px 15px; border-radius: 6px;">Edit</button>
-            </div>
-        `;
+                    <div style="flex: 1;">
+                        <strong style="font-size: 15px;">${escapeHtml(song.title) || "Unknown"}</strong> <br>
+                        <span style="font-size: 13px; color: #888;">${escapeHtml(song.artist) || "Unknown"}</span><br>
+                        <span style="font-size: 12px; color: var(--accent); font-weight: bold;">Key: ${escapeHtml(song.user_key) || "--"}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button onclick="event.stopPropagation(); executeDirectLink('${song.id}', this)" class="link-action-btn" style="background: #1DB954; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold;">Link</button>
+                        <button onclick="event.stopPropagation(); openStandaloneEditModal('${song.id}')" class="edit-action-btn" style="background: #333; color: white; border: none; padding: 10px 15px; border-radius: 6px;">Edit</button>
+                    </div>
+                `;
         container.appendChild(div);
     });
 
@@ -663,12 +674,8 @@ async function forceVaultSync() {
     footer.innerText = "⏳ Downloading latest vault from cloud...";
 
     try {
-        // Mobile talks directly to Supabase, so we just run the load function
         await loadFullVault();
-
-        // Re-evaluate the current song to instantly remove any "Fix Match" warnings
         await fetchCurrentSong();
-
         footer.innerText = "✅ Vault synced with cloud!";
         setTimeout(() => footer.innerText = originalText, 3000);
     } catch (err) {
@@ -680,7 +687,7 @@ async function forceVaultSync() {
 
 function clearSearch() {
     const searchInput = document.getElementById('vault-search');
-    searchInput.value = ''; // Clear the text
-    runLocalSearch();       // Trigger the search logic (which will show the blank list)
-    searchInput.focus();    // Put focus back in the box so you can start typing again
+    searchInput.value = '';
+    runLocalSearch();
+    searchInput.focus();
 }

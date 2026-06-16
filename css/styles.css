@@ -20,11 +20,9 @@ body {
     color: var(--text-main);
     margin: 0;
     padding: 15px;
-    /* Removed the 40px top padding since there's no drag bar */
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    /* Better for mobile scrolling */
     min-height: 100vh;
 }
 
@@ -191,7 +189,6 @@ body {
     cursor: pointer;
     border-radius: 50%;
     padding: 12px;
-    /* Bigger touch targets */
 }
 
 .ctrl-btn.play-pause {
@@ -203,7 +200,6 @@ body {
     width: 100%;
     padding: 15px;
     font-size: 16px;
-    /* 16px prevents iOS auto-zoom */
     border-radius: 8px;
     background: #222;
     color: #fff;
@@ -289,9 +285,7 @@ body {
     margin-top: 4px;
 }
 
-/* =========================================
-   RESTORED: DESKTOP SYNC BUTTON COLORS
-   ========================================= */
+/* Desktop Sync Button Colors */
 .sync-status-btn {
     padding: 6px 12px;
     border-radius: 6px;
@@ -317,9 +311,7 @@ body {
     background-color: var(--accent);
 }
 
-/* =========================================
-   RESTORED: EXPLORER LIST SELECTION LOGIC
-   ========================================= */
+/* Explorer List Selection Logic */
 .search-result-item .link-action-btn,
 .search-result-item .edit-action-btn {
     display: none !important;
@@ -340,10 +332,8 @@ body {
     display: block;
     margin-bottom: 5px;
     margin-top: 10px;
-    /* Space above each label */
     font-size: 11px;
     color: var(--text-sub);
-    /* Consistent gray */
     text-transform: uppercase;
     font-weight: bold;
 }
@@ -357,10 +347,8 @@ body {
     border-radius: 5px;
     font-size: 15px;
     box-sizing: border-box;
-    /* Ensures padding doesn't break width */
 }
 
-/* Ensure the modal content doesn't get cramped */
 .modal-content {
     display: flex;
     flex-direction: column;
