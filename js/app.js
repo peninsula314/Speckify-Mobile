@@ -46,7 +46,6 @@ async function loginToSpotify() {
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     const scope = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
 
-    // RESTORED REAL SPOTIFY URL
     const authUrl = new URL("https://accounts.spotify.com/authorize");
 
     const args = new URLSearchParams({
@@ -63,7 +62,6 @@ async function exchangeToken(code) {
         client_id: SPOTIFY_CLIENT_ID, code_verifier: codeVerifier
     });
 
-    // RESTORED REAL SPOTIFY URL
     const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body
     });
@@ -88,7 +86,6 @@ async function refreshSpotifyToken() {
     });
 
     try {
-        // RESTORED REAL SPOTIFY URL
         const response = await fetch('https://accounts.spotify.com/api/token', {
             method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body
         });
@@ -110,7 +107,7 @@ async function refreshSpotifyToken() {
 // 3. DATABASE SYNC & VAULT LOGIC
 // ==========================================
 const escapeHtml = (text) => {
-    return (text || "").toString().replace(/[&<"'>]/g, (m) => ({ '&': '&', '<': '<', '>': '>', '"': '&quot;', "'": '&#39;' }[m]));
+    return (text || "").toString().replace(/[&<"'>]/g, (m) => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[m]));
 };
 
 async function loadFullVault() {
@@ -179,7 +176,7 @@ async function fetchCurrentSong() {
 
     try {
         let [playerRes, queueRes] = await Promise.all([
-            fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } }),
+            fetch('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${token}` } }),
             fetch('https://api.spotify.com/v1/me/player/queue', { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
 
@@ -188,7 +185,7 @@ async function fetchCurrentSong() {
             if (refreshed) {
                 token = localStorage.getItem('spotify_access_token');
                 [playerRes, queueRes] = await Promise.all([
-                    fetch('https://api.spotify.com/v1/me/player/currently-playing', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch('https://api.spotify.com/v1/me/player', { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetch('https://api.spotify.com/v1/me/player/queue', { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
             } else return;
@@ -605,16 +602,16 @@ function renderPage() {
         };
 
         div.innerHTML = `
-                    <div style="flex: 1;">
-                        <strong style="font-size: 15px;">${escapeHtml(song.title) || "Unknown"}</strong> <br>
-                        <span style="font-size: 13px; color: #888;">${escapeHtml(song.artist) || "Unknown"}</span><br>
-                        <span style="font-size: 12px; color: var(--accent); font-weight: bold;">Key: ${escapeHtml(song.user_key) || "--"}</span>
-                    </div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <button onclick="event.stopPropagation(); executeDirectLink('${song.id}', this)" class="link-action-btn" style="background: #1DB954; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold;">Link</button>
-                        <button onclick="event.stopPropagation(); openStandaloneEditModal('${song.id}')" class="edit-action-btn" style="background: #333; color: white; border: none; padding: 10px 15px; border-radius: 6px;">Edit</button>
-                    </div>
-                `;
+            <div style="flex: 1;">
+                <strong style="font-size: 15px;">${escapeHtml(song.title) || "Unknown"}</strong> <br>
+                <span style="font-size: 13px; color: #888;">${escapeHtml(song.artist) || "Unknown"}</span><br>
+                <span style="font-size: 12px; color: var(--accent); font-weight: bold;">Key: ${escapeHtml(song.user_key) || "--"}</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button onclick="event.stopPropagation(); executeDirectLink('${song.id}', this)" class="link-action-btn" style="background: #1DB954; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold;">Link</button>
+                <button onclick="event.stopPropagation(); openStandaloneEditModal('${song.id}')" class="edit-action-btn" style="background: #333; color: white; border: none; padding: 10px 15px; border-radius: 6px;">Edit</button>
+            </div>
+        `;
         container.appendChild(div);
     });
 
