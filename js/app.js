@@ -202,7 +202,7 @@ async function fetchCurrentSong() {
 
         const track = data.item;
         currentSpotifyTrackId = track.id;
-        currentTrackTitle = track.name.replace(/\s*\(.*?\)\s*/g, '').replace(/\s-.*$/, '').trim();
+        currentTrackTitle = track.name; // Fix: Preserves the full title for the UI and Database
         currentTrackArtist = track.artists.map(a => a.name).join(', ');
 
         localProgressMs = data.progress_ms;
