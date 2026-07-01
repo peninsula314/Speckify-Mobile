@@ -211,7 +211,10 @@ async function fetchCurrentSong() {
         latestData.isPlaying = data.is_playing;
 
         const match = matchLocal(track.id, currentTrackTitle, track.artists);
-        const isExactMatch = match && match.spotify_id === track.id;
+        const isExactMatch = match &&
+            match.spotify_id === track.id &&
+            match.title === currentTrackTitle &&
+            match.artist === currentTrackArtist;
 
         let nextMatch = null;
         let nextTrackStr = "End of Queue";
@@ -315,20 +318,30 @@ async function fetchCurrentSong() {
             editBtn.onclick = () => openStandaloneEditModal(match.id);
 
             if (isExactMatch) {
+                // GREEN: ID, Title, and Artist are 100% perfectly synced.
                 syncBtn.className = "sync-status-btn sync-status-green";
                 syncBtn.style.backgroundColor = "";
                 syncBtn.innerText = "SYNCED";
                 syncBtn.onclick = null;
-            } else if (!match.spotify_id || match.spotify_id.trim() === "") {
+            } else if (match.spotify_id === track.id) {
+                // YELLOW: ID matches, but the text is dirty (e.g. "Chasing Light" vs "Chasing Light, pt 2")
                 syncBtn.className = "sync-status-btn sync-status-yellow";
                 syncBtn.style.backgroundColor = "";
-                syncBtn.innerText = "FIX MATCH";
+                syncBtn.innerText = "UPDATE TEXT";
+                syncBtn.title = `DB: ${match.title} | Spotify: ${currentTrackTitle}`;
+                syncBtn.onclick = () => openSyncModal(currentTrackTitle, currentTrackArtist);
+            } else if (!match.spotify_id || match.spotify_id.trim() === "") {
+                // YELLOW: Text fuzzily matched, but ID is missing
+                syncBtn.className = "sync-status-btn sync-status-yellow";
+                syncBtn.style.backgroundColor = "";
+                syncBtn.innerText = "LINK ID";
                 syncBtn.title = `Fuzzy matched to: ${match.title}`;
-                syncBtn.onclick = () => openSyncModal(latestData.title, latestData.artist);
+                syncBtn.onclick = () => openSyncModal(currentTrackTitle, currentTrackArtist);
             } else {
+                // ORANGE: ID exists but belongs to a DIFFERENT song (Same name, different album)
                 syncBtn.className = "sync-status-btn";
                 syncBtn.style.backgroundColor = "#d97706";
-                syncBtn.innerText = "CLOSE MATCH (ADD NEW)";
+                syncBtn.innerText = "ADD NEW VERSION";
                 syncBtn.title = `Fuzzy matched to: ${match.title}`;
                 syncBtn.onclick = () => openStandaloneEditModal(null);
             }
